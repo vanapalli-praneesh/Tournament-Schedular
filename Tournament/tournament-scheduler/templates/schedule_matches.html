@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule Matches</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .header-icon::before {
+            content: "📅";
+            font-size: 28px;
+        }
+
+        h2 {
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .matches-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .match-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .match-card:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .teams-info {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .match-number {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .vs-text {
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .inputs-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], 
+        input[type="date"], 
+        input[type="time"] {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #1a1a1a;
+        }
+
+        input[type="text"]:focus, 
+        input[type="date"]:focus, 
+        input[type="time"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+            transform: translateY(-1px);
+        }
+
+        input[type="text"]::placeholder {
+            color: #9ca3af;
+        }
+
+        select {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #1a1a1a;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 48px;
+        }
+
+        select:hover {
+            border-color: #d1d5db;
+        }
+
+        .schedule-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .schedule-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .schedule-btn:hover::before {
+            left: 100%;
+        }
+
+        .schedule-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+        }
+
+        .error-message::before {
+            content: "⚠️";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #764ba2;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .match-count {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .inputs-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .teams-info {
+                font-size: 16px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state::before {
+            content: "📅";
+            font-size: 48px;
+            display: block;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon"></div>
+            <h2>Schedule Matches</h2>
+            <p class="subtitle">Set dates, times, and locations for your tournament matches</p>
+        </div>
+
+        {% if error %}
+            <div class="error-message">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            <ul class="matches-list">
+                {% if matches %}
+                    {% for match in matches %}
+                    <li class="match-card">
+                        <div class="teams-info">
+                            <span class="match-number">Match {{ match.id }}</span>
+                            <span>{{ match.team1 }}</span>
+                            <span class="vs-text">vs</span>
+                            <span>{{ match.team2 }}</span>
+                        </div>
+                        <div class="inputs-row">
+                            <div class="form-group">
+                                <label for="date_{{ match.id }}">Date</label>
+                                <input type="date"
+                                       id="date_{{ match.id }}"
+                                       name="date_{{ match.id }}"
+                                       required
+                                       value="{{ match.date or '' }}"
+                                       min="{{ tournament_start }}"
+                                       max="{{ tournament_end }}" />
+                            </div>
+                            <div class="form-group">
+                                <label for="time_{{ match.id }}">Time</label>
+                                <input type="time"
+                                       id="time_{{ match.id }}"
+                                       name="time_{{ match.id }}"
+                                       required
+                                       value="{{ match.time or '' }}" />
+                            </div>
+                            <div class="form-group">
+                                <label for="location_{{ match.id }}">Location</label>
+                                <input type="text"
+                                       id="location_{{ match.id }}"
+                                       name="location_{{ match.id }}"
+                                       placeholder="Enter venue or location"
+                                       value="{{ match.location or '' }}" />
+                            </div>
+                            <div class="form-group">
+                                <label for="duration_{{ match.id }}">Duration</label>
+                                <select id="duration_{{ match.id }}"
+                                        name="duration_{{ match.id }}"
+                                        required>
+                                    <option value="">Select duration</option>
+                                    {% for hour in range(1, 11) %}
+                                        <option value="{{ hour }}" 
+                                                {% if match.duration == hour %}selected{% endif %}>
+                                            {{ hour }} hour{% if hour != 1 %}s{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="empty-state">
+                        No matches to schedule yet.<br>
+                        <small>Generate matches first to schedule them.</small>
+                    </li>
+                {% endif %}
+            </ul>
+            
+            {% if matches %}
+                <button type="submit" class="schedule-btn">
+                    Save Schedule
+                </button>
+            {% endif %}
+        </form>
+
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">← Back to Dashboard</a>
+            <a href="{{ url_for('view_matches') }}">View Matches</a>
+            <a href="{{ url_for('check_conflicts') }}">Check Conflicts</a>
+        </div>
+    </div>
+</body>
+</html>

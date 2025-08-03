@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Teams & Generate Matches</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .header-icon::before {
+            content: "👥 🔀";
+            font-size: 20px;
+        }
+
+        h2 {
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .input-section {
+            margin-bottom: 32px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        #team-input {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #1a1a1a;
+        }
+
+        #team-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        #team-input::placeholder {
+            color: #9ca3af;
+        }
+
+        #add-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 16px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        #add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .team-list-section {
+            margin-bottom: 32px;
+        }
+
+        .team-list-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .team-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .team-item {
+            display: flex;
+            align-items: center;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 16px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .team-item:hover {
+            border-color: #d1d5db;
+            background: #f3f4f6;
+        }
+
+        .team-name {
+            flex: 1;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 12px;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        #submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        #submit-btn:hover::before {
+            left: 100%;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        #submit-btn:disabled {
+            background: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #submit-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-footer {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .nav-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-footer a:hover {
+            color: #764ba2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state::before {
+            content: "👥";
+            font-size: 48px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px;
+                margin: 10px;
+            }
+
+            .input-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            #add-btn {
+                width: 100%;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+        }
+
+        .team-count {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon"></div>
+            <h2>Add Teams & Generate Matches</h2>
+            <p class="subtitle">Enter team names below. Add each team, review your list, then generate your tournament fixtures!</p>
+        </div>
+
+        <form id="teams-form" method="POST" autocomplete="off">
+            <div class="input-section">
+                <div class="input-row">
+                    <input 
+                        id="team-input" 
+                        type="text" 
+                        placeholder="Enter team name" 
+                        autocomplete="off" 
+                    />
+                    <button id="add-btn" type="button">Add Team</button>
+                </div>
+            </div>
+
+            <div class="team-list-section">
+                <div class="team-list-title">
+                    Teams <span class="team-count" id="team-count">0</span>
+                </div>
+                <ul id="team-list" class="team-list">
+                    <li class="empty-state">No teams added yet</li>
+                </ul>
+            </div>
+
+            <input type="hidden" name="teams" id="teams-hidden" />
+            <button id="submit-btn" type="submit" disabled>Generate Matches</button>
+        </form>
+
+        <div class="nav-footer">
+            <a href="{{ url_for('index') }}">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        let teams = [];
+
+        function addTeam() {
+            const teamInput = document.getElementById("team-input");
+            const teamName = teamInput.value.trim();
+            
+            if (!teamName) return;
+            
+            if (teams.includes(teamName)) {
+                alert("This team is already added.");
+                return;
+            }
+            
+            teams.push(teamName);
+            teamInput.value = "";
+            renderTeams();
+            teamInput.focus();
+        }
+
+        function removeTeam(idx) {
+            teams.splice(idx, 1);
+            renderTeams();
+        }
+
+        function renderTeams() {
+            const list = document.getElementById("team-list");
+            const teamCount = document.getElementById("team-count");
+            
+            teamCount.textContent = teams.length;
+            
+            if (teams.length === 0) {
+                list.innerHTML = '<li class="empty-state">No teams added yet</li>';
+            } else {
+                list.innerHTML = "";
+                teams.forEach((name, idx) => {
+                    const li = document.createElement("li");
+                    li.className = "team-item";
+                    li.innerHTML = `
+                        <span class="team-name">👥 ${name}</span>
+                        <button type="button" class="remove-btn" onclick="removeTeam(${idx})">Remove</button>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+            
+            document.getElementById("teams-hidden").value = teams.join(",");
+            document.getElementById("submit-btn").disabled = teams.length < 2;
+        }
+
+        document.getElementById("add-btn").onclick = addTeam;
+        document.getElementById("team-input").addEventListener("keyup", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                addTeam();
+            }
+        });
+    </script>
+</body>
+</html>
